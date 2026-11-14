@@ -1,0 +1,53 @@
+//server.py
+import socket
+import os
+import threading
+
+HOST = "127.0.0.1"
+PORT = 5005
+
+def server():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind((HOST, PORT))
+
+    print("Server waiting...")
+
+    filename, addr = s.recvfrom(1024)
+    filename = filename.decode()
+
+    if os.path.exists(filename):
+        f = open(filename, "r")
+        data = f.read()
+        f.close()
+        s.sendto(data.encode(), addr)
+    else:
+        s.sendto("File not found".encode(), addr)
+
+    s.close()
+
+thread = threading.Thread(target=server)
+thread.start()
+
+//hello.txt
+f = open("hello.txt", "w")
+f.write("Hello! This is a sample file.")
+f.close()
+
+//client.py
+import socket
+
+HOST = "127.0.0.1"
+PORT = 5005
+
+client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+filename = input("Enter filename: ")
+
+client.sendto(filename.encode(), (HOST, PORT))
+
+data, addr = client.recvfrom(4096)
+
+print("File Content:")
+print(data.decode())
+
+client.close()
